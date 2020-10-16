@@ -1,0 +1,5 @@
+{
+    "name": "Write-Ups",
+    "route": "/admin/writeups",
+    "base_route": "/writeups"
+}

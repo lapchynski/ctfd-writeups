@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="jumbotron">
+	<div class="container">
+		<h1>Write-Ups</h1>
+	</div>
+</div>
+<div class="container">
+	<div class="row">
+		<div class="col-md-12">
+			<h3 class="text-center">
+				<p>Write-Ups document your process for solving a particular challenge</p>
+			</h3>
+			<br>
+			<h5 class="text-center">
+				<p>
+					It can be helpful (particularly for beginners) to see multiple ways to solve a challenge, or different
+					paths or ideas that you may not have considered while you were solving the challenge. We encourage
+					you to submit a write-ups detailing your process and what you tried (even if you didn't solve the
+					challenge) and browse through others' write-ups. They don't have to be extensive masterpieces, just
+					enough that someone with some limited familiarity with the relevant concepts can follow along.
+				</p>
+				<p>
+					You'll get a few extra points on most challenges for submitting a write-up, and once you solve a
+					challenge you'll be able to see others' write-ups for that challenge. Write-Ups for some
+					challenges are available before solving the challenge, to serve as walk-throughs for participants
+					that would benefit.
+				</p>
+			</h5>
+		</div>
+	</div>
+	<hr>
+	<div class="row">
+		<div class="col-md-12">
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<td scope="col" width="200px"><b>Challenge</b></td>
+						<td scope="col"><b>User</b></td>
+						<td scope="col"><b>Team</b></td>
+						<td scope="col"><b>Title</b></td>
+					</tr>
+				</thead>
+				<tbody>
+				{% for writeup in writeups %}
+					<tr>
+						<th scope="row">{{ writeup.challenge.wu_for.name }}</th>
+						<td>{{ writeup.user.name }}</td>
+						<td>{{ writeup.user.team.name }}</td>
+						<td><a href="{{ url_for('writeups.view_writeup', writeup_id=writeup.id) }}">{{ writeup.provided.split('\n')[0] | trim }}</a></td>
+					</tr>
+				{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}
+
+{% block entrypoint %}
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends "admin/base.html" %}
+
+{% block stylesheets %}
+	<link rel="stylesheet" href="{{ url_for('views.themes', theme='admin', path='css/challenge-board.css') }}">
+{% endblock %}
+
+{% block content %}
+	<div class="jumbotron">
+		<div class="container">
+			<h1>Write-Ups
+				<!--<a class="no-decoration" href="{{ url_for('admin.challenges_new') }}">
+					<span role="button" data-toggle="tooltip" title="Create Challenge">
+						<i class="btn-fa fas fa-plus-circle"></i>
+					</span>
+				</a>-->
+			</h1>
+		</div>
+	</div>
+
+	<div class="container">
+		<div class="row">
+			<div class="col-md-12">
+				<nav class="nav nav-tabs nav-fill" id="challenge-properties" role="tablist">
+					<a class="nav-item nav-link active" data-toggle="tab" href="#challenges" role="tab" >Challenges</a>
+					<a class="nav-item nav-link" data-toggle="tab" href="#submissions" role="tab">Submissions</a>
+				</nav>
+
+				<div class="tab-content" id="nav-tabContent">
+					<div class="tab-pane fade show active" id="challenges" role="tabpanel">
+						<div class="row">
+							<div class="col-md-12">
+								<h3 class="text-center py-3 d-block">Challenges</h3>
+								{% if challenges %}
+								<div id="challenges-list" class="row">
+									<div class="col-md-12">
+										<form method="POST">
+											<button type="submit" class="btn btn-md btn-primary btn-outlined float-right">Save</button>
+											<table class="table table-striped">
+												<thead>
+													<tr>
+														<td></td>
+														<td scope="col" width="250px"><b>Name</b></td>
+														<td scope="col"><b>Challenge Points</b></td>
+														<td scope="col"><b>Accepting Write-Ups</b></td>
+														<td scope="col"><b>Write-Up Points</b></td>
+														<td scope="col"><b>Write-Ups Visible Before Solve</b></td>
+													</tr>
+												</thead>
+												<tbody>
+												{% for challenge in challenges %}
+													<tr>
+														<th scope="row" class="text-center">{{ loop.index }}</th>
+														<td>{{ challenge.name }}</td>
+														<td>{{ challenge.value }}</td>
+														<td>
+															<input type="checkbox" value="1" name="{{ challenge.id }}-accepting_wu" {{ 'checked' if challenge.accepting_wu else '' }}>
+														</td>
+														<td>
+															<input type="number" style="width:5em" name="{{ challenge.id }}-wu_value" value="{{ challenge.wu_value }}">
+														</td>
+														<td>
+															<input type="checkbox" name="{{ challenge.id }}-vis_before_solve" value="1" {{ '' if challenge.solve_req else 'checked' }}>
+														</td>
+													</tr>
+												{% endfor %}
+												</tbody>
+											</table>
+											<input type="hidden" value="{{ Session.nonce }}" name="nonce" id="nonce" />
+											<button type="submit" class="btn btn-md btn-primary btn-outlined float-right">Save</button>
+										</form>
+									</div>
+								</div>
+								{% endif %}
+							</div>
+						</div>
+					</div>
+					<div class="tab-pane fade" id="submissions" role="tabpanel">
+						<div class="row">
+							<div class="col-md-12">
+								<h3 class="text-center py-3 d-block">Submissions</h3>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+{% endblock %}
+
+{% block entrypoint %}
+	<script defer src="{{ url_for('views.themes', theme='admin', path='js/pages/main.js') }}"></script>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

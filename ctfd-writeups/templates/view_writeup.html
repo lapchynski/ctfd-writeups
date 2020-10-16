@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="jumbotron">
+	<div class="container">
+		<h1>Write-Up for {{ challenge.name }}</h1>
+		<small class="text-muted">By {{ user.name }} of {{ user.team.name }}</small>
+	</div>
+</div>
+<div class="container">
+	{% if error %}
+	<div class="row">
+		<div class="col-md-12">
+			<div class="pt-5 mt-5 text-center">
+				<h2>{{ error.msg }}</h2>
+			</div>
+		</div>
+	</div>
+	{% else %}
+	<div class="row">
+		<div class="col-md-12">
+			<a href="{{ url_for('writeups.writeups') }}" class="btn btn-md btn-primary btn-outlined float-left">Back to Write-Ups</a>
+			{% if editable %}
+			<a href="{{ url_for('writeups.edit_writeup', challenge_id=challenge.id) }}" class="btn btn-md btn-primary btn-outlined float-right">Edit</a>
+			{% endif %}
+		</div>
+	</div>
+	<hr>
+	<div class="row">
+		<div class="col-md-12">
+			{{ content | safe }}
+		</div>
+	</div>
+	{% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}
+
+{% block entrypoint %}
+	<script defer src="{{ url_for('views.themes', theme='admin', path='js/pages/main.js') }}"></script>
+{% endblock %}

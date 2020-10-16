@@ -1,0 +1,17 @@
+services:
+  ctfd:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/code
+      - logvolume01:/var/log
+#    build:
+#      context: .
+#      dockerfile: ./Dockerfile
+#    ports:
+#      - 4000:4000
+#    volumes:
+#      - ./ctfd-writeups:/opt/CTFd/CTFd/plugins/ctfd-writeups
+#      - ./serve.py:/opt/CTFd/serve.py
+#      - ./ctfd.db:/opt/CTFd/CTFd/ctfd.db
