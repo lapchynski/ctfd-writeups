@@ -75,6 +75,9 @@ def load_bp(admin_route, base_route, plugin_dir='.'):
     @authed_only
     def writeups():
         user = get_current_user()
+        page = db.session.query(Pages).filter(Pages.route == base_route).one_or_none()
+        print(page)
+
         if user.type == 'admin':
             visible_writeups = (db.session.query(Submissions)
                                 .join(WriteUpChallenges, Submissions.challenge_id == WriteUpChallenges.id))
@@ -85,7 +88,7 @@ def load_bp(admin_route, base_route, plugin_dir='.'):
                                 .filter(WriteUpChallenges.for_id.in_(solves_ids)))
 
         visible_writeups = visible_writeups.all()
-        return render_template("writeups.html", writeups=visible_writeups)
+        return render_template("writeups.html", writeups=visible_writeups, page_content=page.content if page else '')
 
     @writeups_bp.route(f"{base_route}/<int:writeup_id>", methods=["GET"])
     @during_ctf_time_only
@@ -184,14 +187,15 @@ def load_bp(admin_route, base_route, plugin_dir='.'):
 
     # Add the Write-Ups page to pages so it appears in the nav bar
     if not db.session.query(Pages).filter(Pages.route == base_route).one_or_none():
-        db.session.add(Pages(
-            title='Write-Ups',
-            route=base_route,
-            content='',
-            draft=False,
-            hidden=False,
-            auth_required=True
-        ))
-        db.session.commit()
+        with open(f"{plugin_dir}/assets/writeups_default.html", 'r') as fd:
+            db.session.add(Pages(
+                title='Write-Ups',
+                route=base_route,
+                content=fd.read(),
+                draft=False,
+                hidden=False,
+                auth_required=True
+            ))
+            db.session.commit()
 
     return writeups_bp
