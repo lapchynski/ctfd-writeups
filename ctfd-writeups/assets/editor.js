@@ -6,6 +6,5 @@ window.addEventListener('load', () => {
         autofocus: true,
         forceSync: true,
         indentWithTabs: false,
-        initialValue: "# Title\n\ncontent..."
     });
 })

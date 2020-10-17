@@ -25,7 +25,7 @@
 					You'll get a few extra points on most challenges for submitting a write-up, and once you solve a
 					challenge you'll be able to see others' write-ups for that challenge. Write-Ups for some
 					challenges are available before solving the challenge, to serve as walk-throughs for participants
-					that would benefit.
+					that would benefit, and all write-ups will be available at the end of the CTF.
 				</p>
 			</h5>
 		</div>
@@ -45,7 +45,7 @@
 				<tbody>
 				{% for writeup in writeups %}
 					<tr>
-						<th scope="row">{{ writeup.challenge.wu_for.name }}</th>
+						<th scope="row"><a href="{{ url_for('challenges.listing') }}#{{ writeup.challenge.wu_for.name }}-{{ writeup.challenge.for_id }}">{{ writeup.challenge.wu_for.name }}</a></th>
 						<td>{{ writeup.user.name }}</td>
 						<td>{{ writeup.user.team.name }}</td>
 						<td><a href="{{ url_for('writeups.view_writeup', writeup_id=writeup.id) }}">{{ writeup.provided.split('\n')[0] | trim }}</a></td>

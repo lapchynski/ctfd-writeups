@@ -75,11 +75,14 @@ def load_bp(admin_route, base_route, plugin_dir='.'):
     @authed_only
     def writeups():
         user = get_current_user()
-        solves_ids = [s.challenge_id for s in user.team.solves]
-        visible_writeups = (db.session.query(Submissions)
-                            .filter(Submissions.challenge_id.in_(solves_ids))
-                            .join(Challenges, Submissions.challenge_id == Challenges.id)
-                            .filter(Challenges.type == 'writeup'))
+        if user.type == 'admin':
+            visible_writeups = (db.session.query(Submissions)
+                                .join(WriteUpChallenges, Submissions.challenge_id == WriteUpChallenges.id))
+        else:
+            solves_ids = [s.challenge_id for s in user.team.solves]
+            visible_writeups = (db.session.query(Submissions)
+                                .join(WriteUpChallenges, Submissions.challenge_id == WriteUpChallenges.id)
+                                .filter(WriteUpChallenges.for_id.in_(solves_ids)))
 
         visible_writeups = visible_writeups.all()
         return render_template("writeups.html", writeups=visible_writeups)
@@ -105,10 +108,11 @@ def load_bp(admin_route, base_route, plugin_dir='.'):
         if not challenge or not challenge.writeup_challenge:
             return redirect(url_for('writeups.writeups'))
 
-        solves = user.team.solves
-        if not challenge.writeup_challenge.solve_req or challenge.id in (s.challenge_id for s in solves):
+        if (user.type == 'admin' or
+                not challenge.writeup_challenge.solve_req or
+                challenge.id in (s.challenge_id for s in user.team.solves)):
             content = markdown(writeup.provided)
-            if writeup.user.id == user.id:
+            if writeup.user.id == user.id or user.type == 'admin':
                 editable = True
         else:
             error = {
@@ -119,7 +123,7 @@ def load_bp(admin_route, base_route, plugin_dir='.'):
                                challenge=challenge,
                                content=content,
                                error=error,
-                               user=user,
+                               user=writeup.user,
                                editable=editable)
 
     @writeups_bp.route(f"{base_route}/<int:challenge_id>/edit", methods=["GET", "POST"])
@@ -135,25 +139,48 @@ def load_bp(admin_route, base_route, plugin_dir='.'):
         if not challenge or not challenge.writeup_challenge:
             return redirect(url_for('writeups.writeups'))
 
-        writeup = next((s for s in user.solves if s.challenge_id == challenge.writeup_challenge.id), None)
-        team_writeup = next((s for s in user.team.solves if s.challenge_id == challenge.writeup_challenge.id), None)
+        if user.type == 'admin':
+            writeup = (db.session.query(Submissions)
+                         .filter(Submissions.challenge_id == challenge.writeup_challenge.id)
+                         .one_or_none())
+        else:
+            writeup = (db.session.query(Submissions)
+                         .filter(Submissions.challenge_id == challenge.writeup_challenge.id)
+                         .filter(Submissions.user_id == user.id)
+                         .one_or_none())
+
         if not writeup:
-            writeup = Submissions(
-                challenge=challenge.writeup_challenge,
-                user=user,
-                team=user.team,
-                ip=request.remote_addr,
-                provided='',
-                type='incorrect' if team_writeup else 'correct'
-            )
+            team_wu_solve = (db.session.query(Solves)
+                               .filter(Submissions.challenge_id == challenge.writeup_challenge.id)
+                               .filter(Submissions.team_id == user.team.id)
+                               .one_or_none())
+            if team_wu_solve:
+                writeup = Submissions(
+                    challenge=challenge.writeup_challenge,
+                    user=user,
+                    team=user.team,
+                    ip=request.remote_addr,
+                    provided='',
+                    type='incorrect'
+                )
+            else:
+                writeup = Solves(
+                    challenge=challenge.writeup_challenge,
+                    user=user,
+                    team=user.team,
+                    ip=request.remote_addr,
+                    provided='',
+                )
             db.session.add(writeup)
+            db.session.flush()
 
         if request.method == 'POST':
             writeup.provided = request.form.to_dict().get('content', '')
+            res = redirect(url_for('writeups.view_writeup', writeup_id=writeup.id))
             db.session.commit()
-            return redirect(url_for('writeups.view_writeup', writeup_id=writeup.id))
+            return res
         elif request.method == 'GET':
-            return render_template("edit_writeup.html", challenge=challenge, content=writeup.provided)
+            return render_template("edit_writeup.html", challenge=challenge, writeup=writeup)
 
     # Add the Write-Ups page to pages so it appears in the nav bar
     if not db.session.query(Pages).filter(Pages.route == base_route).one_or_none():

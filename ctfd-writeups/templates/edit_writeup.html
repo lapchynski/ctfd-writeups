@@ -21,7 +21,6 @@
 	{% else %}
 	<div class="row">
 		<div class="col-md-12">
-			{% with form = Forms.pages.PageEditForm(content=content) %}
 			<form method="POST">
 
 				<div class="form-group">
@@ -31,21 +30,17 @@
 						<hr>
 						<p>Type your write-up here. </p>
 						<small class="text-muted"><a href="https://www.markdownguide.org/basic-syntax/">Markdown</a> is supported</small>
-						<textarea class="d-none" id="writeup-content-editor" name="content" style="display:none;">
-							{{ content }}
-						</textarea>
+						<textarea class="d-none" id="writeup-content-editor" name="content" style="display:none;">{{ writeup.provided }}</textarea>
 					</div>
 				</div>
 
 				<div class="form-group float-right">
-					{{ form.nonce() }}
-					<button class="btn btn-primary" id="save-writeup">
-						Save
-					</button>
+					<input type="hidden" value="{{ Session.nonce }}" name="nonce" id="nonce" />
+					<a class="btn btn-primary" href="{{ url_for('writeups.view_writeup', writeup_id=writeup.id) }}">Cancel</a>
+					<button class="btn btn-primary" type="submit">Save</button>
 				</div>
 
 			</form>
-			{% endwith %}
 		</div>
 	{% endif %}
 
