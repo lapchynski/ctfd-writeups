@@ -26,9 +26,13 @@
 				<div class="form-group">
 					<div class="col-md-12">
 						<h3>{{ challenge.name }}</h3>
-						<p>{{ challenge.description }}</p>
 						<hr>
-						<p>Type your write-up here. </p>
+						<p>Type your write-up here. The first line will be used as the title.</p>
+						<p>We encourage you to submit a write-ups detailing your process and what you tried (even if you
+						   didn't solve the challenge) and browse through others' write-ups. They don't have to be
+						   extensive masterpieces, just enough that someone with some limited familiarity with the
+						   relevant concepts can follow along. Write-ups that are blatantly lazy point grabs (i.e. a
+						   a single sentence) won't be awarded points.</p>
 						<small class="text-muted"><a href="https://www.markdownguide.org/basic-syntax/">Markdown</a> is supported</small>
 						<textarea class="d-none" id="writeup-content-editor" name="content" style="display:none;">{{ writeup.provided }}</textarea>
 					</div>

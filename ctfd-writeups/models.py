@@ -1,5 +1,5 @@
 from datetime import datetime as dt
-from CTFd.models import db, Challenges
+from CTFd.models import db, Challenges, Submissions
 
 
 class WriteUpChallenges(Challenges):
@@ -15,3 +15,9 @@ class WriteUpChallenges(Challenges):
 
     def __init__(self, *args, **kwargs):
         super(WriteUpChallenges, self).__init__(state='hidden', *args, **kwargs)
+
+
+class Duplicate(Submissions):
+    """A Submission subclass so multiple write-ups from the same team aren't scored multiple times but also
+    don't show up as fails."""
+    __mapper_args__ = {"polymorphic_identity": "duplicate"}

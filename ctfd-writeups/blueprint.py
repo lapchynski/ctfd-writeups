@@ -56,6 +56,8 @@ def load_bp(admin_route, base_route, plugin_dir='.'):
     @admins_only
     def get_config():
         challenges = db.session.query(Challenges).filter(Challenges.type != 'writeup').all()
+        submissions = (db.session.query(Submissions).join(WriteUpChallenges,
+                                                          Submissions.challenge_id == WriteUpChallenges.id)).all()
 
         rows = []
         for challenge in challenges:
@@ -68,7 +70,7 @@ def load_bp(admin_route, base_route, plugin_dir='.'):
                 'solve_req': challenge.writeup_challenge.solve_req if challenge.writeup_challenge else True
             })
 
-        return render_template("writeups_admin.html", challenges=rows)
+        return render_template("writeups_admin.html", challenges=rows, writeups=submissions)
 
     @writeups_bp.route(base_route, methods=["GET"])
     @during_ctf_time_only
@@ -76,16 +78,20 @@ def load_bp(admin_route, base_route, plugin_dir='.'):
     def writeups():
         user = get_current_user()
         page = db.session.query(Pages).filter(Pages.route == base_route).one_or_none()
-        print(page)
 
         if user.type == 'admin':
             visible_writeups = (db.session.query(Submissions)
                                 .join(WriteUpChallenges, Submissions.challenge_id == WriteUpChallenges.id))
         else:
-            solves_ids = [s.challenge_id for s in user.team.solves]
+            solves_ids = [s.challenge_id for s in user.team.solves] if user.team else []
             visible_writeups = (db.session.query(Submissions)
                                 .join(WriteUpChallenges, Submissions.challenge_id == WriteUpChallenges.id)
-                                .filter(WriteUpChallenges.for_id.in_(solves_ids)))
+                                .filter(WriteUpChallenges.for_id.in_(solves_ids) |
+                                        ~WriteUpChallenges.solve_req |
+                                        (Submissions.user_id == user.id)))
+
+        if 'challenge' in request.args:
+            visible_writeups = visible_writeups.filter(WriteUpChallenges.for_id == request.args['challenge'])
 
         visible_writeups = visible_writeups.all()
         return render_template("writeups.html", writeups=visible_writeups, page_content=page.content if page else '')
@@ -113,7 +119,8 @@ def load_bp(admin_route, base_route, plugin_dir='.'):
 
         if (user.type == 'admin' or
                 not challenge.writeup_challenge.solve_req or
-                challenge.id in (s.challenge_id for s in user.team.solves)):
+                challenge.id in (s.challenge_id for s in user.team.solves) or
+                writeup.user.id == user.id):
             content = markdown(writeup.provided)
             if writeup.user.id == user.id or user.type == 'admin':
                 editable = True
@@ -164,7 +171,7 @@ def load_bp(admin_route, base_route, plugin_dir='.'):
                     team=user.team,
                     ip=request.remote_addr,
                     provided='',
-                    type='incorrect'
+                    type='duplicate'
                 )
             else:
                 writeup = Solves(

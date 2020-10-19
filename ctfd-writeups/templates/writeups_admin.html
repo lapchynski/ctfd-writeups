@@ -78,6 +78,26 @@
 						<div class="row">
 							<div class="col-md-12">
 								<h3 class="text-center py-3 d-block">Submissions</h3>
+								<table class="table table-striped">
+									<thead>
+										<tr>
+											<td scope="col" width="200px"><b>Challenge</b></td>
+											<td scope="col"><b>User</b></td>
+											<td scope="col"><b>Team</b></td>
+											<td scope="col"><b>Title</b></td>
+										</tr>
+									</thead>
+									<tbody>
+									{% for writeup in writeups %}
+										<tr>
+											<th scope="row"><a href="{{ url_for('challenges.listing') }}#{{ writeup.challenge.wu_for.name }}-{{ writeup.challenge.for_id }}">{{ writeup.challenge.wu_for.name }}</a></th>
+											<td>{{ writeup.user.name }}</td>
+											<td>{{ writeup.user.team.name }}</td>
+											<td><a href="{{ url_for('writeups.view_writeup', writeup_id=writeup.id) }}">{{ writeup.provided.split('\n')[0].strip('#') | trim }}</a></td>
+										</tr>
+									{% endfor %}
+									</tbody>
+								</table>
 							</div>
 						</div>
 					</div>

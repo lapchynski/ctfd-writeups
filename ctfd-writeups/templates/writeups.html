@@ -25,7 +25,7 @@
 						<th scope="row"><a href="{{ url_for('challenges.listing') }}#{{ writeup.challenge.wu_for.name }}-{{ writeup.challenge.for_id }}">{{ writeup.challenge.wu_for.name }}</a></th>
 						<td>{{ writeup.user.name }}</td>
 						<td>{{ writeup.user.team.name }}</td>
-						<td><a href="{{ url_for('writeups.view_writeup', writeup_id=writeup.id) }}">{{ writeup.provided.split('\n')[0] | trim }}</a></td>
+						<td><a href="{{ url_for('writeups.view_writeup', writeup_id=writeup.id) }}">{{ writeup.provided.split('\n')[0].strip('#') | trim }}</a></td>
 					</tr>
 				{% endfor %}
 				</tbody>
