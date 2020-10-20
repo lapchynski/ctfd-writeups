@@ -6,6 +6,8 @@ from CTFd.utils import markdown
 from flask import request, render_template, Blueprint, abort, redirect, url_for, send_from_directory
 from CTFd.models import db, Challenges, Submissions, Solves, Pages
 from .models import WriteUpChallenges
+import cmarkgfm
+from cmarkgfm.cmark import Options as cmarkgfmOptions
 
 writeups_bp = Blueprint("writeups", __name__, template_folder="templates")
 
@@ -121,7 +123,7 @@ def load_bp(admin_route, base_route, plugin_dir='.'):
                 not challenge.writeup_challenge.solve_req or
                 challenge.id in (s.challenge_id for s in user.team.solves) or
                 writeup.user.id == user.id):
-            content = markdown(writeup.provided)
+            content = cmarkgfm.github_flavored_markdown_to_html(writeup.provided, options=cmarkgfmOptions.CMARK_OPT_SAFE)
             if writeup.user.id == user.id or user.type == 'admin':
                 editable = True
         else:
