@@ -5,7 +5,7 @@ from CTFd.utils.user import authed, get_current_user
 from CTFd.utils import markdown
 from flask import request, render_template, Blueprint, abort, redirect, url_for, send_from_directory
 from CTFd.models import db, Challenges, Submissions, Solves, Pages
-from .models import WriteUpChallenges
+from .models import WriteUpChallenges, Duplicate
 import cmarkgfm
 from cmarkgfm.cmark import Options as cmarkgfmOptions
 
@@ -151,29 +151,29 @@ def load_bp(admin_route, base_route, plugin_dir='.'):
         if not challenge or not challenge.writeup_challenge:
             return redirect(url_for('writeups.writeups'))
 
-        if user.type == 'admin':
-            writeup = (db.session.query(Submissions)
-                         .filter(Submissions.challenge_id == challenge.writeup_challenge.id)
-                         .one_or_none())
-        else:
-            writeup = (db.session.query(Submissions)
-                         .filter(Submissions.challenge_id == challenge.writeup_challenge.id)
-                         .filter(Submissions.user_id == user.id)
-                         .one_or_none())
+        if user.team and challenge.id not in user.team.solves or not user.team and challenge.id not in user.solves:
+            return render_template("edit_writeup.html", challenge=challenge, error={
+                'heading': '403',
+                'msg': 'Sorry, you must solve the challenge before submitting a write-up'
+            })
+
+        writeup = (db.session.query(Submissions)
+                     .filter(Submissions.challenge_id == challenge.writeup_challenge.id)
+                     .filter(Submissions.user_id == user.id)
+                     .one_or_none())
 
         if not writeup:
             team_wu_solve = (db.session.query(Solves)
-                               .filter(Submissions.challenge_id == challenge.writeup_challenge.id)
-                               .filter(Submissions.team_id == user.team.id)
+                               .filter(Solves.challenge_id == challenge.writeup_challenge.id)
+                               .filter(Solves.team_id == user.team.id)
                                .one_or_none())
             if team_wu_solve:
-                writeup = Submissions(
+                writeup = Duplicate(
                     challenge=challenge.writeup_challenge,
                     user=user,
                     team=user.team,
                     ip=request.remote_addr,
                     provided='',
-                    type='duplicate'
                 )
             else:
                 writeup = Solves(
