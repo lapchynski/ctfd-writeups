@@ -151,7 +151,9 @@ def load_bp(admin_route, base_route, plugin_dir='.'):
         if not challenge or not challenge.writeup_challenge:
             return redirect(url_for('writeups.writeups'))
 
-        if user.team and challenge.id not in user.team.solves or not user.team and challenge.id not in user.solves:
+        solves = [s.challenge_id for s in user.team.solves] if user.team else [s.challenge_id for s in user.solves]
+
+        if challenge.id not in solves:
             return render_template("edit_writeup.html", challenge=challenge, error={
                 'heading': '403',
                 'msg': 'Sorry, you must solve the challenge before submitting a write-up'
